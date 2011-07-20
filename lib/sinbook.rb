@@ -12,6 +12,7 @@ end
 module Sinatra
   require 'digest/md5'
   require 'yajl'
+  require "json"
 
   class FacebookObject
     def initialize app
@@ -55,10 +56,47 @@ module Sinatra
     def appurl
       "http://www.facebook.com/apps/application.php?id=#{self.app_id}"
     end
+    
+    def graphurl
+      "http://www.facebook.com/connect/uiserver.php?app_id=#{self.app_id}"
+    end
+    
+    def refs
+      refs_string = "/?"
+      @refs.each do |key,value|
+        refs_string += "#{key}=#{value}&" unless value.nil? || value.blank?
+      end
+      refs_string
+    end
+    
+    def perms
+      @perms.nil? ? perms = "" : perms = "&perms=#{@perms}"
+      perms
+    end
+    
+    def graph_perms_url
+      #"#{graphurl}&method=permissions.request&display=page&next=#{callback}#{refs}&response_type=code&fbconnect=1&perms=publish_stream,user_online_presence,xmpp_login,offline_access,email"
+      "#{graphurl}&method=permissions.request&display=page&next=#{callback}#{refs}&response_type=code&fbconnect=1#{perms}"
+    end
+    
+    def graph_url
+      "#{graphurl}&method=permissions.request&display=page&next=#{callback}#{refs}&response_type=code&fbconnect=1"
+    end
 
-    def require_login!
+    def require_login!(refs=nil)
+      @refs = refs
       if valid?
-        redirect addurl unless params[:user]
+        redirect graph_url unless params[:user]
+      else
+        app.redirect url
+      end
+    end
+    
+    def require_login_with_perms!(perms=nil, refs=nil)
+      @perms = perms
+      @refs = refs
+      if valid? 
+        redirect graph_perms_url unless params[:user]
       else
         app.redirect url
       end
@@ -264,7 +302,7 @@ module Sinatra
         sock.setsockopt Socket::SOL_SOCKET, Socket::SO_SNDTIMEO, timeout
       rescue Exception => ex
         # causes issues on solaris?
-        puts ex.inspect
+        #puts ex.inspect
       end
       sock
     end

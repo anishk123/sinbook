@@ -1,4 +1,11 @@
-sinbook: simple sinatra facebook extension in 300 lines of ruby
+sinbook: 
+simple sinatra facebook authentication extension
+modified 2011 by Anish Kumar (anishk123)
+to use the latest facebook graph api
+and ability to add refs to track users
+
+original:
+simple sinatra facebook extension in 300 lines of ruby
   (c) 2009 Aman Gupta (tmm1)
 
 === Usage
@@ -14,8 +21,16 @@ sinbook: simple sinatra facebook extension in 300 lines of ruby
     callback 'http://myappserver.com'
   end
 
+  #to login user with no extra permission
   get '/' do
-    fb.require_login!
+    fb.require_login! #fb.require_login!('tracking_code') to track refs
+    "Hi <fb:name uid=#{fb[:user]} useyou=false />!"
+  end
+
+  #to login user with more permissions such as publish stream, email access etc.
+  get '/' do
+    fb.require_login_with_perms!('publish_stream,email') 
+    #fb.require_login_with_perms!('publish_stream,email,xmpp_login', 'tracking_code') to track refs
     "Hi <fb:name uid=#{fb[:user]} useyou=false />!"
   end
 
