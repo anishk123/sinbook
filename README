@@ -1,5 +1,5 @@
 sinbook: 
-simple sinatra facebook authentication extension
+sintra facebook auth using new Graph url
 modified 2011 by Anish Kumar (anishk123)
 to use the latest facebook graph api
 and ability to add refs to track users
